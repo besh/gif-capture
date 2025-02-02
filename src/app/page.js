@@ -261,7 +261,9 @@ const imageStyle = {
   position: "absolute",
   top: "0",
   left: "0",
-  filter: ""
+  filter: "",
+  zIndex: "2",
+  transform: "scale3d(-1, 1, -1)"
 }
 
 const progressContainerStyle = {
@@ -381,6 +383,9 @@ export default function Home() {
         }
   
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        console.log(EFFECTS[currentEffect])
+
         EFFECTS[currentEffect](ctx, canvas.width, canvas.height);
         frameData.push(canvas.toDataURL("image/png"));
   
@@ -392,7 +397,6 @@ export default function Home() {
     };
   };
   const entries = Object.entries(EFFECTS);
-  console.log(entries, entries.map(item => console.log(item)))
 
   return (
     <div onClick={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
@@ -409,7 +413,6 @@ export default function Home() {
       <select value={currentEffect} style={selectStyle} onChange={(e) => setCurrentEffect(e.target.value)}>
         {entries.map(item => {
           const [key] = item;
-          console.log(item);
           return (
             <option key={key} value={key}>{key}</option>
           )
