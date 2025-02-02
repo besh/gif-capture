@@ -5,12 +5,53 @@ import gifshot from "gifshot";
 
 const RECORDING_TIME = 2000;
 
+
+const containerStyle = { 
+  width: "100vw", 
+  height: "100vh", 
+  background: "black", 
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  cursor: "pointer"
+}
+
+const imageStyle = {
+  width: "100vw",
+  height: "100vw",
+  objectFit: "contain",
+  position: "absolute",
+  top: "0",
+  left: "0"
+}
+
+const progressContainerStyle = {
+  position: "fixed",
+  bottom: "20%",
+  left: "50%",
+  width: "300px",
+  marginLeft: "-150px",
+  border: "2px solid pink",
+  borderRadius: "8px",
+  zIndex: "2",
+  height: "40px",
+  overflow: "hidden"
+}
+
 export default function Home() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [gifUrl, setGifUrl] = useState(null);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [progress, setProgress] = useState(null);
   const recordedChunks = useRef([]);
+
+  const progressStyle = {
+    width: `${progress}%`,
+    height: "100%",
+    backgroundColor: "purple",
+    transition: "all ease-in 0.2s"
+  }
 
   useEffect(() => {
     async function getCamera() {
@@ -22,6 +63,12 @@ export default function Home() {
   }, []);
 
   const startRecording = () => {
+    if (gifUrl) {
+      setGifUrl(null);
+
+      return;
+    }
+
     if (!mediaRecorder || mediaRecorder.state === "recording") return; // Prevent multiple starts
     
     recordedChunks.current = [];
@@ -41,71 +88,9 @@ export default function Home() {
   const processVideo = async () => {
     const blob = new Blob(recordedChunks.current, { type: "video/webm" });
     const videoUrl = URL.createObjectURL(blob);
-
-    console.log('the video url', videoUrl)
     extractFrames(videoUrl);
   };
-
-  // const extractFrames = (videoUrl) => {
-  //   const video = document.createElement("video");
-  //   video.src = videoUrl;
-  //   video.crossOrigin = "anonymous";
-  
-  //   video.onloadeddata = () => {
-  //     const canvas = document.createElement("canvas");
-  //     const ctx = canvas.getContext("2d");
-  
-  //     // Ensure canvas dimensions match video
-  //     canvas.width = video.videoWidth || 640;
-  //     canvas.height = video.videoHeight || 480;
-  
-  //     // ✅ Ensure `gifInstance` doesn't go out of scope
-  //     const gif = new GIF({
-  //       workers: 2,
-  //       quality: 10,
-  //       width: canvas.width,
-  //       height: canvas.height,
-  //     });
-  
-  //     let frameCount = 10;
-  //     let captureInterval = (video.duration * 1000) / frameCount;
-  //     let currentFrame = 0;
-  
-  //     video.play();
-  
-  //     const captureFrame = () => {
-  //       if (currentFrame >= frameCount) {
-  //         console.log("✅ Frames captured, starting GIF render...");
-  //         gif.render();
-  //         return;
-  //       }
-  
-  //       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  //       applyPosterization(ctx, canvas.width, canvas.height);
-  //       gif.addFrame(ctx, { delay: 100 });
-  
-  //       console.log(`🖼️ Added frame ${currentFrame + 1} / ${frameCount}`);
-  
-  //       currentFrame++;
-  //       setTimeout(captureFrame, captureInterval);
-  //     };
-  
-  //     // ✅ Ensure `on("finished")` works
-  //     gif.on("progress", (p) => console.log(`📊 GIF Progress: ${Math.round(p * 100)}%`));
-  //     gif.on("finished", (blob) => {
-  //       console.log("🎉 GIF processing complete!");
-  //       setGifUrl(URL.createObjectURL(blob));
-  //     });
-  
-  //     captureFrame();
-  //   };
-  // };
-  
-  
-
-  // Apply posterization effect
-  
-  
+    
   const extractFrames = (videoUrl) => {
     const video = document.createElement("video");
     video.src = videoUrl;
@@ -118,17 +103,16 @@ export default function Home() {
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
 
-      
-      
       let frameData = [];
       let frameCount = 20;
       const interval = RECORDING_TIME / frameCount;
       let captureInterval = interval;
       let currentFrame = 0;
-  
+
       video.play();
-  
+      
       const captureFrame = () => {
+        setProgress((currentFrame / frameCount) * 100);
         if (currentFrame >= frameCount) {
           console.log("Frames captured, generating GIF...");
           gifshot.createGIF(
@@ -142,6 +126,7 @@ export default function Home() {
               if (!obj.error) {
                 console.log("GIF created!");
                 setGifUrl(obj.image);
+                setProgress(null);
               } else {
                 console.error("GIF creation failed", obj.error);
               }
@@ -180,8 +165,16 @@ export default function Home() {
   console.log('the gif url', gifUrl)
 
   return (
-    <div onClick={() => (gifUrl ? setGifUrl(null) : startRecording())} style={{ width: "100vw", height: "100vh", background: "black", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}>
-      {gifUrl ? <img src={gifUrl} style={{ width: "100%", height: "100%", objectFit: "contain" }} /> : <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+    <div onClick={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
+      {gifUrl && (
+        <img src={gifUrl} style={imageStyle} />
+      )}
+      {progress && progress > 0 && (
+        <div style={progressContainerStyle}>
+          <div style={progressStyle} />
+        </div>
+      )}
+      <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       <canvas ref={canvasRef} width="640" height="480" style={{ display: "none" }} />
     </div>
   );
