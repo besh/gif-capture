@@ -420,7 +420,7 @@ export default function Home() {
   const entries = Object.entries(EFFECTS);
 
   return (
-    <div onClick={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
+    <div onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
       {gifUrl && (
         <img src={gifUrl} style={imageStyle} />
       )}
