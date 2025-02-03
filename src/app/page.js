@@ -276,12 +276,6 @@ const fadeInKeyframes = `
   }
 `;
 
-// Inject keyframes into a <style> tag if it doesn't already exist
-const styleSheet = document.styleSheets[0];
-if (styleSheet) {
-  styleSheet.insertRule(fadeInKeyframes, styleSheet.cssRules.length);
-}
-
 const progressContainerStyle = {
   position: "fixed",
   bottom: "20%",
@@ -324,6 +318,14 @@ export default function Home() {
     }
     getCamera();
   }, []);
+
+  useEffect(() => {
+    // Inject keyframes into a <style> tag if it doesn't already exist
+    const styleSheet = document.styleSheets[0];
+    if (styleSheet) {
+      styleSheet.insertRule(fadeInKeyframes, styleSheet.cssRules.length);
+    }
+  }, [])
 
   const startRecording = () => {
     if (gifUrl) {
@@ -420,7 +422,7 @@ export default function Home() {
   const entries = Object.entries(EFFECTS);
 
   return (
-    <div onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
+    <div onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
       {gifUrl && (
         <img src={gifUrl} style={imageStyle} />
       )}
