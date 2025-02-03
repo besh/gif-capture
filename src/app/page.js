@@ -291,7 +291,12 @@ const progressContainerStyle = {
 
 const selectStyle = {
   position: "fixed",
-  top: "20px"
+  top: "20px",
+  zIndex: "5",
+  left: '50%',
+  height: '30px',
+  width: '150px',
+  marginLeft: '-75px'
 }
 
 export default function Home() {
@@ -423,21 +428,7 @@ export default function Home() {
   const entries = Object.entries(EFFECTS);
 
   return (
-    <div 
-      onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} 
-      onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} 
-      style={containerStyle}
-    >
-      {gifUrl && (
-        <img src={gifUrl} style={imageStyle} />
-      )}
-      {progress && progress > 0 && (
-        <div style={progressContainerStyle}>
-          <div style={progressStyle} />
-        </div>
-      )}
-      <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scale3d(-1, 1, -1)" }} />
-      <canvas ref={canvasRef} width="100%" height="100%" style={{ display: "none" }} />
+    <div>
       <select value={currentEffect} style={selectStyle} onChange={(e) => setCurrentEffect(e.target.value)}>
         {entries.map(item => {
           const [key] = item;
@@ -446,6 +437,22 @@ export default function Home() {
           )
         })}
       </select>
+      <div 
+        onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} 
+        onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} 
+        style={containerStyle}
+      >
+        {gifUrl && (
+          <img src={gifUrl} style={imageStyle} />
+        )}
+        {progress && progress > 0 && (
+          <div style={progressContainerStyle}>
+            <div style={progressStyle} />
+          </div>
+        )}
+        <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scale3d(-1, 1, -1)" }} />
+        <canvas ref={canvasRef} width="100%" height="100%" style={{ display: "none" }} />
+      </div>
     </div>
   );
 }
