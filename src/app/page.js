@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import gifshot from "gifshot";
 
 
-const RECORDING_TIME = 3000;
+const RECORDING_TIME = 1000;
 
 const EDGE_THRESHOLD = 40;  // Lower = more edges, higher = fewer edges
 const EDGE_CONTRAST = 1.8;  // Increase to boost edges
@@ -105,7 +105,7 @@ function applyHeatmapEffect(ctx, width, height) {
   }
 }
 
-const PIXEL_SIZE = 6;
+const PIXEL_SIZE = 10;
 function applyPixelationEffect(ctx, width, height) {
   let imageData = ctx.getImageData(0, 0, width, height);
   let data = imageData.data;
@@ -255,15 +255,31 @@ const containerStyle = {
 }
 
 const imageStyle = {
-  width: "100vw",
-  height: "100vw",
+  width: "100%",
   objectFit: "contain",
   position: "absolute",
   top: "0",
   left: "0",
   filter: "",
   zIndex: "2",
-  transform: "scale3d(-1, 1, -1)"
+  animation: "fadeIn 0.5s ease-in-out"
+}
+
+const fadeInKeyframes = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+// Inject keyframes into a <style> tag if it doesn't already exist
+const styleSheet = document.styleSheets[0];
+if (styleSheet) {
+  styleSheet.insertRule(fadeInKeyframes, styleSheet.cssRules.length);
 }
 
 const progressContainerStyle = {
@@ -346,6 +362,8 @@ export default function Home() {
     video.onloadeddata = () => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
+
+      console.log('dimensions', video.videoWidth, video.videoHeight)
   
       canvas.width = video.videoWidth || 640;
       canvas.height = video.videoHeight || 480;
@@ -381,8 +399,11 @@ export default function Home() {
           );
           return;
         }
-  
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        ctx.save(); // Save the current state
+        ctx.scale(-1, 1); // Flip horizontally
+        ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+        ctx.restore()
 
         console.log(EFFECTS[currentEffect])
 
@@ -409,7 +430,7 @@ export default function Home() {
         </div>
       )}
       <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scale3d(-1, 1, -1)" }} />
-      <canvas ref={canvasRef} width="640" height="480" style={{ display: "none" }} />
+      <canvas ref={canvasRef} width="100%" height="100%" style={{ display: "none" }} />
       <select value={currentEffect} style={selectStyle} onChange={(e) => setCurrentEffect(e.target.value)}>
         {entries.map(item => {
           const [key] = item;
