@@ -6,14 +6,14 @@ import gifshot from "gifshot";
 const RECORDING_TIME = 1000;
 
 const EDGE_THRESHOLD = 20;  // Lower = more edges, higher = fewer edges
-const EDGE_CONTRAST = 1.8;  // Increase to boost edges
-const COLOR_REDUCTION = 120; // Lower = more colors, higher = more posterization
+const EDGE_CONTRAST = 1;  // Increase to boost edges
+const COLOR_REDUCTION = 150; // Lower = more colors, higher = more posterization
 
-const E_INK_EDGE_THRESHOLD = 20;  // Lower = more edges
-const E_INK_EDGE_CONTRAST = 1;  // Increase to boost edges
-const E_INK_NOISE_INTENSITY = 30; // Higher = more dithering noise
+const E_INK_EDGE_THRESHOLD = 18;  // Lower = more edges
+const E_INK_EDGE_CONTRAST = 1.8;  // Increase to boost edges
+const E_INK_NOISE_INTENSITY = 200; // Higher = more dithering noise
 
-const STIPPLE_DENSITY = 0.5;
+const STIPPLE_DENSITY = 1;
 function applyStippleEffect(ctx, width, height) {
   let imageData = ctx.getImageData(0, 0, width, height);
   let data = imageData.data;
@@ -76,7 +76,7 @@ function applyEmojiEffect(ctx, width, height) {
   ctx.drawImage(textCanvas, 0, 0);
 }
 
-const GLITCH_SHIFT = 5;
+const GLITCH_SHIFT = 40;
 function applyGlitchEffect(ctx, width, height) {
   let imageData = ctx.getImageData(0, 0, width, height);
   let data = imageData.data;
@@ -319,7 +319,8 @@ export default function Home() {
     async function getCamera() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) videoRef.current.srcObject = stream;
-      setMediaRecorder(new MediaRecorder(stream, { mimeType: "video/webm" }));
+      const mimeType = MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
+      setMediaRecorder(new MediaRecorder(stream, { mimeType }));
     }
     getCamera();
   }, []);
@@ -369,8 +370,6 @@ export default function Home() {
     video.onloadeddata = () => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
-
-      console.log('dimensions', video.videoWidth, video.videoHeight)
       
       // divide by two to reduce gif filesize
       canvas.width = (window.innerWidth / 2);
@@ -438,8 +437,7 @@ export default function Home() {
         })}
       </select>
       <div 
-        onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} 
-        onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} 
+        onClick={() => (gifUrl ? setGifUrl(null) : startRecording())} 
         style={containerStyle}
       >
         {gifUrl && (
