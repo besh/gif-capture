@@ -5,7 +5,7 @@ import gifshot from "gifshot";
 
 const RECORDING_TIME = 1000;
 
-const EDGE_THRESHOLD = 40;  // Lower = more edges, higher = fewer edges
+const EDGE_THRESHOLD = 20;  // Lower = more edges, higher = fewer edges
 const EDGE_CONTRAST = 1.8;  // Increase to boost edges
 const COLOR_REDUCTION = 120; // Lower = more colors, higher = more posterization
 
@@ -366,9 +366,10 @@ export default function Home() {
       const ctx = canvas.getContext("2d");
 
       console.log('dimensions', video.videoWidth, video.videoHeight)
-  
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+      
+      // divide by two to reduce gif filesize
+      canvas.width = (window.innerWidth / 2);
+      canvas.height = (window.innerHeight / 2);
 
       let frameData = [];
       let frameCount = 20;
@@ -422,7 +423,11 @@ export default function Home() {
   const entries = Object.entries(EFFECTS);
 
   return (
-    <div onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} style={containerStyle}>
+    <div 
+      onPointerDown={() => (gifUrl ? setGifUrl(null) : startRecording())} 
+      onTouchStart={() => (gifUrl ? setGifUrl(null) : startRecording())} 
+      style={containerStyle}
+    >
       {gifUrl && (
         <img src={gifUrl} style={imageStyle} />
       )}
